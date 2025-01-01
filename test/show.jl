@@ -2795,3 +2795,12 @@ Base.setindex!(d::NoLengthDict, v, k) = d.dict[k] = v
     @test contains(str, "NoLengthDict")
     @test contains(str, "1 => 2")
 end
+
+# Issue 52641
+@testset "isidentifier normalization" begin
+    @test !Base.isidentifier(Symbol("e\u0301")) # not NFC-normalized
+    @test Base.isidentifier(Symbol("\u00E9"))   # NFC-normalized
+    @test !Base.isidentifier(Symbol("\u00B5"))  # U+00B5 = µ normalized to U+03BC = μ by parser
+    @test Base.isidentifier(Symbol("\u03BC"))   # U+03BC = μ is the normalized form
+    @test repr(Symbol("e\u0301")) == "Symbol(\"e\u0301\")"  # isidentifier affects symbol display
+end
