@@ -1555,7 +1555,16 @@ function isidentifier(s::AbstractString)
     is_id_start_char(c) || return false
     return all(is_id_char, rest)
 end
-isidentifier(s::Symbol) = isidentifier(string(s))
+
+function isidentifier(s::Symbol)
+    str = string(s)
+    if isidentifier(str)
+        normalized_str = Unicode.normalize(str; compose=true, stable=true, chartransform=Unicode.julia_chartransform)
+        return str == normalized_str
+    else
+        return false
+    end
+end
 
 is_op_suffix_char(c::AbstractChar) = ccall(:jl_op_suffix_char, Cint, (UInt32,), c) != 0
 
